@@ -1,525 +1,990 @@
-// === Python Quest — Full client-side RPG game ===
+// ============================================================
+// Python Quest — Full RPG Game Engine (client-side)
+// ============================================================
 
-// === Quest Data ===
-const QUESTS = [
-    // --- Chapter 1: The Village of Variables ---
+// === Avatar Classes ===
+var AVATARS = [
+    { id: "warrior", emoji: "\u2694\uFE0F", name: "Warrior", stat: "+20 HP", hpBonus: 20, atkBonus: 0, defBonus: 0 },
+    { id: "mage",    emoji: "\uD83E\uDDD9", name: "Mage",    stat: "+3 ATK", hpBonus: 0,  atkBonus: 3, defBonus: 0 },
+    { id: "ranger",  emoji: "\uD83C\uDFF9", name: "Ranger",  stat: "+2 DEF", hpBonus: 0,  atkBonus: 0, defBonus: 2 },
+    { id: "rogue",   emoji: "\uD83D\uDDE1\uFE0F", name: "Rogue", stat: "+2 ATK +1 DEF", hpBonus: 0, atkBonus: 2, defBonus: 1 },
+    { id: "monk",    emoji: "\uD83E\uDD4B", name: "Monk",    stat: "+10 HP +1 ATK", hpBonus: 10, atkBonus: 1, defBonus: 0 },
+    { id: "bard",    emoji: "\uD83C\uDFB5", name: "Bard",    stat: "+10 HP +1 DEF", hpBonus: 10, atkBonus: 0, defBonus: 1 },
+];
+
+// === Enemy Emojis ===
+var ENEMY_EMOJIS = {
+    goblin: "\uD83D\uDC7A", slime: "\uD83D\uDFE2", troll: "\uD83E\uDDCC",
+    snake: "\uD83D\uDC0D", wolf: "\uD83D\uDC3A", wraith: "\uD83D\uDC7B",
+    lizard: "\uD83E\uDD8E", dragon: "\uD83D\uDC09", golem: "\uD83E\uDEA8",
+    phantom: "\uD83D\uDC7B", lich: "\uD83D\uDC80", reaper: "\u2620\uFE0F",
+    spider: "\uD83D\uDD77\uFE0F", bat: "\uD83E\uDD87", mimic: "\uD83C\uDF81",
+    boss: "\uD83D\uDC0D", elemental: "\uD83D\uDD25", gargoyle: "\uD83E\uDEA8",
+    siren: "\uD83E\uDDDC", shadow: "\uD83C\uDF11",
+};
+
+// === Map Node Types ===
+var NODE_BATTLE = "battle";
+var NODE_BOSS = "boss";
+var NODE_SHOP = "shop";
+var NODE_REST = "rest";
+
+// === Shop Items ===
+var SHOP_CATALOG = [
+    { name: "Health Potion", icon: "\uD83E\uDDEA", desc: "Restores 40 HP in battle", cost: 20, type: "potion", value: 40 },
+    { name: "Great Potion",  icon: "\u2728",       desc: "Restores 80 HP in battle", cost: 45, type: "potion", value: 80 },
+    { name: "Attack Charm",  icon: "\uD83D\uDD25", desc: "Permanently +2 ATK",       cost: 60, type: "buff",   stat: "attack", value: 2 },
+    { name: "Shield Rune",   icon: "\uD83D\uDEE1\uFE0F", desc: "Permanently +2 DEF", cost: 60, type: "buff",  stat: "defense", value: 2 },
+];
+
+// === All Questions ===
+// type: "mcq" = multiple choice, "typein" = type the answer
+var QUESTIONS = [
+    // --- Chapter 1: Village of Variables (Easy) ---
     {
-        chapter: "The Village of Variables",
-        story: "You arrive at a small village under attack by a Bug Goblin. The village elder says only someone who understands Python basics can defeat it!",
-        enemy: { name: "Bug Goblin", sprite: "goblin", attack: 8 },
-        challenge: {
-            question: "The goblin casts a spell! Quick \u2014 what is the correct way to create a variable in Python?",
-            options: ["var x = 10", "x = 10", "int x = 10", "let x = 10"],
-            answer: "x = 10",
-            explanation: "Python uses simple assignment with =. No type declarations or keywords like var/let needed.",
-        },
-        xpReward: 30, goldReward: 15, rewardItem: "Wooden Sword",
+        question: "What is the correct way to create a variable in Python?",
+        type: "mcq",
+        options: ["var x = 10", "x = 10", "int x = 10", "let x = 10"],
+        answer: "x = 10",
+        explanation: "Python uses simple assignment with <code>=</code>. No type declarations or keywords like var/let needed.",
     },
     {
-        chapter: "The Village of Variables",
-        story: "Another creature emerges \u2014 a Syntax Slime! It speaks in broken code and oozes errors.",
-        enemy: { name: "Syntax Slime", sprite: "slime", attack: 6 },
-        challenge: {
-            question: "The slime hurls bad code at you! Which data type is 3.14?",
-            options: ["int", "str", "float", "bool"],
-            answer: "float",
-            explanation: "3.14 has a decimal point, making it a float (floating-point number).",
-        },
-        xpReward: 30, goldReward: 10, rewardItem: null,
+        question: "What data type is <code>3.14</code> in Python?",
+        type: "mcq",
+        options: ["int", "str", "float", "double"],
+        answer: "float",
+        explanation: "Numbers with a decimal point are <code>float</code> (floating-point). Python doesn't have a <code>double</code> type.",
     },
     {
-        chapter: "The Village of Variables",
-        story: "A massive Type Troll blocks the bridge out of the village. It demands you prove your knowledge!",
-        enemy: { name: "Type Troll", sprite: "troll", attack: 12 },
-        challenge: {
-            question: "The troll roars: What does type('hello') return?",
-            options: ["<class 'str'>", "<class 'int'>", "<class 'char'>", "<class 'text'>"],
-            answer: "<class 'str'>",
-            explanation: "Text in quotes is a string (str) in Python. There is no char or text type.",
-        },
-        xpReward: 40, goldReward: 20, rewardItem: "Leather Shield",
-    },
-    // --- Chapter 2: The Forest of Flow ---
-    {
-        chapter: "The Forest of Flow",
-        story: "You enter a dark forest. A Conditional Cobra slithers toward you, hissing if/else statements!",
-        enemy: { name: "Conditional Cobra", sprite: "snake", attack: 14 },
-        challenge: {
-            question: "The cobra strikes! What keyword handles an alternative condition in Python?",
-            options: ["else if", "elif", "elseif", "elsif"],
-            answer: "elif",
-            explanation: "Python uses 'elif' (short for else if) for additional conditions after 'if'.",
-        },
-        xpReward: 40, goldReward: 20, rewardItem: null,
+        question: "What does <code>type('hello')</code> return?",
+        type: "mcq",
+        options: ["<class 'str'>", "<class 'int'>", "<class 'char'>", "<class 'text'>"],
+        answer: "<class 'str'>",
+        explanation: "Text in quotes is a string (<code>str</code>). Python has no <code>char</code> or <code>text</code> type.",
     },
     {
-        chapter: "The Forest of Flow",
-        story: "A Loop Wolf circles you endlessly, round and round. You must break free with your Python knowledge!",
-        enemy: { name: "Loop Wolf", sprite: "wolf", attack: 16 },
-        challenge: {
-            question: "The wolf traps you in an infinite loop! Which keyword exits a loop immediately?",
-            options: ["stop", "exit", "break", "end"],
-            answer: "break",
-            explanation: "'break' immediately exits the current loop. 'continue' would skip to the next iteration.",
-        },
-        xpReward: 45, goldReward: 25, rewardItem: "Speed Boots",
+        question: "What keyword is used to display output in Python?\n\nType the keyword:",
+        type: "typein",
+        answer: "print",
+        accept: ["print"],
+        explanation: "The <code>print()</code> function outputs text to the console.",
     },
     {
-        chapter: "The Forest of Flow",
-        story: "Deep in the forest, a Range Wraith appears from the shadows! It guards the path with number sequences.",
-        enemy: { name: "Range Wraith", sprite: "wraith", attack: 18 },
-        challenge: {
-            question: "The wraith asks: What does list(range(3)) produce?",
-            options: ["[1, 2, 3]", "[0, 1, 2]", "[0, 1, 2, 3]", "[3]"],
-            answer: "[0, 1, 2]",
-            explanation: "range(3) generates numbers starting at 0, up to but not including 3: 0, 1, 2.",
-        },
-        xpReward: 50, goldReward: 25, rewardItem: null,
+        question: "What is the result of <code>10 // 3</code> in Python?\n\nType the number:",
+        type: "typein",
+        answer: "3",
+        accept: ["3"],
+        explanation: "<code>//</code> is integer (floor) division. It divides and rounds down: 10 \u00f7 3 = 3.33... \u2192 3",
     },
-    // --- Chapter 3: The Cavern of Collections ---
+    // --- Chapter 2: Forest of Flow (Medium) ---
     {
-        chapter: "The Cavern of Collections",
-        story: "You descend into a crystal cavern. A List Lizard guards a treasure chest full of data!",
-        enemy: { name: "List Lizard", sprite: "lizard", attack: 18 },
-        challenge: {
-            question: "The lizard challenges you: How do you add an item to the end of a list?",
-            options: ["list.add(item)", "list.append(item)", "list.push(item)", "list.insert(item)"],
-            answer: "list.append(item)",
-            explanation: "append() adds a single item to the end of a list. push() is JavaScript, not Python!",
-        },
-        xpReward: 50, goldReward: 30, rewardItem: "Crystal Ring",
+        question: "What keyword handles an alternative condition after <code>if</code>?",
+        type: "mcq",
+        options: ["else if", "elif", "elseif", "elsif"],
+        answer: "elif",
+        explanation: "Python uses <code>elif</code> (short for else if). Other languages use else if or elsif, but not Python.",
     },
     {
-        chapter: "The Cavern of Collections",
-        story: "A Dictionary Dragon awakens from its slumber! It breathes key-value fire at you!",
-        enemy: { name: "Dictionary Dragon", sprite: "dragon", attack: 22 },
-        challenge: {
-            question: "The dragon demands: How do you access the value for key 'name' in a dictionary d?",
-            options: ["d.name", "d['name']", "d(name)", "d.get['name']"],
-            answer: "d['name']",
-            explanation: "Use square brackets with the key: d['name']. You can also use d.get('name') with parentheses.",
-        },
-        xpReward: 55, goldReward: 30, rewardItem: null,
+        question: "Which keyword immediately exits a loop?",
+        type: "typein",
+        answer: "break",
+        accept: ["break"],
+        explanation: "<code>break</code> exits the current loop entirely. <code>continue</code> skips to the next iteration.",
     },
     {
-        chapter: "The Cavern of Collections",
-        story: "The cavern shakes violently! A Tuple Titan rises from the ground, immovable and unchangeable!",
-        enemy: { name: "Tuple Titan", sprite: "golem", attack: 24 },
-        challenge: {
-            question: "The titan asks: Why would you use a tuple instead of a list?",
-            options: [
-                "Tuples are faster and immutable",
-                "Tuples can hold more items",
-                "Tuples support more methods",
-                "Tuples use less syntax",
-            ],
-            answer: "Tuples are faster and immutable",
-            explanation: "Tuples are immutable (can't be changed after creation) and slightly faster than lists. Use them for fixed data.",
-        },
-        xpReward: 55, goldReward: 35, rewardItem: "Iron Armor",
-    },
-    // --- Chapter 4: The Tower of Functions ---
-    {
-        chapter: "The Tower of Functions",
-        story: "You climb an ancient wizard's tower. A Function Phantom materializes and blocks the stairway!",
-        enemy: { name: "Function Phantom", sprite: "phantom", attack: 22 },
-        challenge: {
-            question: "The phantom whispers: What keyword defines a function in Python?",
-            options: ["function", "func", "def", "define"],
-            answer: "def",
-            explanation: "Python uses 'def' followed by the function name and parentheses to define functions.",
-        },
-        xpReward: 55, goldReward: 30, rewardItem: null,
+        question: "What does <code>list(range(5))</code> produce?",
+        type: "mcq",
+        options: ["[1, 2, 3, 4, 5]", "[0, 1, 2, 3, 4]", "[0, 1, 2, 3, 4, 5]", "[5]"],
+        answer: "[0, 1, 2, 3, 4]",
+        explanation: "<code>range(5)</code> generates 0 through 4 (5 numbers starting from 0, not including 5).",
     },
     {
-        chapter: "The Tower of Functions",
-        story: "Higher in the tower, a Lambda Lich floats before you, casting anonymous spells from the shadows!",
-        enemy: { name: "Lambda Lich", sprite: "lich", attack: 26 },
-        challenge: {
-            question: "The lich casts a lambda! What does (lambda x: x * 2)(5) return?",
-            options: ["'xx'", "25", "10", "Error"],
-            answer: "10",
-            explanation: "The lambda takes x and returns x * 2. With input 5, it returns 10. It's an anonymous function.",
-        },
-        xpReward: 60, goldReward: 35, rewardItem: "Magic Staff",
+        question: "What does this code print?\n\n<code>for i in range(3):\n    if i == 1:\n        continue\n    print(i)</code>",
+        type: "mcq",
+        options: ["0 1 2", "0 2", "1 2", "0 1"],
+        answer: "0 2",
+        explanation: "<code>continue</code> skips the rest of the loop body for that iteration. When i==1, it skips print, so only 0 and 2 print.",
     },
     {
-        chapter: "The Tower of Functions",
-        story: "At the very top of the tower, the Return Reaper awaits \u2014 the final guardian of the tower!",
-        enemy: { name: "Return Reaper", sprite: "reaper", attack: 28 },
-        challenge: {
-            question: "The reaper asks: What does a function return if it has no return statement?",
-            options: ["0", "''", "None", "False"],
-            answer: "None",
-            explanation: "Functions without an explicit return statement implicitly return None in Python.",
-        },
-        xpReward: 65, goldReward: 40, rewardItem: "Enchanted Cloak",
+        question: "What does <code>bool(0)</code> return?\n\nType True or False:",
+        type: "typein",
+        answer: "False",
+        accept: ["false", "False"],
+        explanation: "In Python, <code>0</code>, empty strings, empty lists, and <code>None</code> are all \"falsy\" \u2014 they evaluate to <code>False</code>.",
     },
-    // --- Chapter 5: The Final Boss ---
     {
-        chapter: "The Python's Lair",
-        story: "You enter the final chamber deep underground. The Python King \u2014 an ancient serpent of pure code \u2014 towers before you. Defeat it to prove you are a true Pythonista!",
-        enemy: { name: "The Python King", sprite: "boss", attack: 35 },
-        challenge: {
-            question: "The Python King's ultimate test: What is the output of [x**2 for x in range(4)]?",
-            options: ["[1, 4, 9, 16]", "[0, 1, 4, 9]", "[0, 2, 4, 6]", "[1, 2, 3, 4]"],
-            answer: "[0, 1, 4, 9]",
-            explanation: "This is a list comprehension. range(4) gives 0,1,2,3. Squaring each: 0\u00b2=0, 1\u00b2=1, 2\u00b2=4, 3\u00b2=9.",
-        },
-        xpReward: 100, goldReward: 100, rewardItem: "Python Crown",
+        question: "How many times does this loop run?\n\n<code>i = 0\nwhile i < 4:\n    i += 1</code>\n\nType the number:",
+        type: "typein",
+        answer: "4",
+        accept: ["4"],
+        explanation: "The loop runs with i = 0, 1, 2, 3. When i becomes 4, the condition <code>i < 4</code> is False and the loop stops. That's 4 iterations.",
+    },
+    // --- Chapter 3: Cavern of Collections (Medium-Hard) ---
+    {
+        question: "How do you add an item to the end of a list?",
+        type: "mcq",
+        options: ["list.add(item)", "list.append(item)", "list.push(item)", "list += item"],
+        answer: "list.append(item)",
+        explanation: "<code>append()</code> adds one item to the end. <code>push()</code> is JavaScript. <code>add()</code> is for sets.",
+    },
+    {
+        question: "How do you access the value for key <code>'name'</code> in dict <code>d</code>?\n\nType the expression:",
+        type: "typein",
+        answer: "d['name']",
+        accept: ["d['name']", "d[\"name\"]", "d.get('name')", "d.get(\"name\")"],
+        explanation: "Use <code>d['name']</code> or <code>d.get('name')</code>. Don't confuse with dot notation (that's JavaScript).",
+    },
+    {
+        question: "What is the output of <code>len([1, [2, 3], 4])</code>?\n\nType the number:",
+        type: "typein",
+        answer: "3",
+        accept: ["3"],
+        explanation: "The list has 3 elements: <code>1</code>, <code>[2, 3]</code> (a nested list counts as one element), and <code>4</code>.",
+    },
+    {
+        question: "What does <code>'hello'[1:4]</code> return?",
+        type: "mcq",
+        options: ["'hell'", "'ell'", "'ello'", "'hel'"],
+        answer: "'ell'",
+        explanation: "String slicing [1:4] takes characters at index 1, 2, 3 (not 4). Index 1='e', 2='l', 3='l'.",
+    },
+    {
+        question: "Which collection type is immutable (can't be changed)?",
+        type: "mcq",
+        options: ["list", "dict", "tuple", "set"],
+        answer: "tuple",
+        explanation: "Tuples are immutable \u2014 once created, you can't add, remove, or change their elements. Lists, dicts, and sets are mutable.",
+    },
+    {
+        question: "What method removes AND returns the last item from a list?\n\nType the method name:",
+        type: "typein",
+        answer: "pop",
+        accept: ["pop", ".pop()", "pop()"],
+        explanation: "<code>list.pop()</code> removes the last item and returns it. <code>remove()</code> removes by value, not position.",
+    },
+    // --- Chapter 4: Tower of Functions (Hard) ---
+    {
+        question: "What keyword defines a function in Python?\n\nType the keyword:",
+        type: "typein",
+        answer: "def",
+        accept: ["def"],
+        explanation: "Python uses <code>def</code> followed by the function name and parentheses: <code>def my_func():</code>",
+    },
+    {
+        question: "What does <code>(lambda x: x * 2)(5)</code> return?\n\nType the number:",
+        type: "typein",
+        answer: "10",
+        accept: ["10"],
+        explanation: "Lambda creates an anonymous function. This one takes x and returns x*2. With input 5: 5*2 = 10.",
+    },
+    {
+        question: "What does a function return if it has no return statement?",
+        type: "mcq",
+        options: ["0", "''", "None", "False"],
+        answer: "None",
+        explanation: "Functions without an explicit <code>return</code> implicitly return <code>None</code>.",
+    },
+    {
+        question: "What is the output?\n\n<code>def greet(name='World'):\n    return f'Hi {name}'\nprint(greet())</code>",
+        type: "mcq",
+        options: ["Hi", "Hi name", "Hi World", "Error"],
+        answer: "Hi World",
+        explanation: "The parameter has a default value <code>'World'</code>. Calling <code>greet()</code> without arguments uses the default.",
+    },
+    {
+        question: "What does <code>*args</code> do in a function definition?",
+        type: "mcq",
+        options: [
+            "Multiplies arguments together",
+            "Accepts any number of positional arguments as a tuple",
+            "Makes arguments required",
+            "Unpacks a dictionary",
+        ],
+        answer: "Accepts any number of positional arguments as a tuple",
+        explanation: "<code>*args</code> collects extra positional arguments into a tuple. <code>**kwargs</code> does the same for keyword arguments as a dict.",
+    },
+    // --- Chapter 5: Python's Lair (Hard) ---
+    {
+        question: "What is the output of <code>[x**2 for x in range(4)]</code>?",
+        type: "mcq",
+        options: ["[1, 4, 9, 16]", "[0, 1, 4, 9]", "[0, 2, 4, 6]", "[1, 2, 3, 4]"],
+        answer: "[0, 1, 4, 9]",
+        explanation: "List comprehension: range(4) gives 0,1,2,3. Squaring each: 0\u00b2=0, 1\u00b2=1, 2\u00b2=4, 3\u00b2=9.",
+    },
+    {
+        question: "What keyword is used to handle exceptions in Python?\n\nType the two keywords separated by /:",
+        type: "typein",
+        answer: "try/except",
+        accept: ["try/except", "try / except", "try except"],
+        explanation: "Python uses <code>try</code> to wrap risky code and <code>except</code> to handle errors that occur.",
+    },
+    {
+        question: "What does <code>'hello world'.split()</code> return?",
+        type: "mcq",
+        options: [
+            "['hello world']",
+            "['hello', 'world']",
+            "['h','e','l','l','o',' ','w','o','r','l','d']",
+            "('hello', 'world')",
+        ],
+        answer: "['hello', 'world']",
+        explanation: "<code>split()</code> with no arguments splits on whitespace and returns a list of words.",
+    },
+    {
+        question: "What is the output?\n\n<code>x = [1, 2, 3]\ny = x\ny.append(4)\nprint(len(x))</code>\n\nType the number:",
+        type: "typein",
+        answer: "4",
+        accept: ["4"],
+        explanation: "<code>y = x</code> doesn't copy the list \u2014 both variables point to the same list. Appending to y also changes x. This is a common Python gotcha!",
+    },
+    {
+        question: "The Python King's final challenge!\n\nWhat does this print?\n\n<code>d = {'a': 1, 'b': 2}\nprint(list(d.keys()))</code>",
+        type: "mcq",
+        options: ["['a', 'b']", "[1, 2]", "[('a',1), ('b',2)]", "{'a', 'b'}"],
+        answer: "['a', 'b']",
+        explanation: "<code>d.keys()</code> returns the dictionary's keys. Wrapping in <code>list()</code> converts to a list: ['a', 'b'].",
     },
 ];
 
-const ENEMY_EMOJIS = {
-    goblin: "\u{1F47A}", slime: "\u{1F7E2}", troll: "\u{1F9CC}",
-    snake: "\u{1F40D}", wolf: "\u{1F43A}", wraith: "\u{1F47B}",
-    lizard: "\u{1F98E}", dragon: "\u{1F409}", golem: "\u{1FAA8}",
-    phantom: "\u{1F47B}", lich: "\u{1F480}", reaper: "\u2620\uFE0F",
-    boss: "\u{1F40D}",
-};
+// === Map Structure ===
+// Each node: { type, name, icon, chapter, questionIndex (for battles) }
+var MAP_NODES = [
+    // Chapter 1: Village of Variables
+    { type: NODE_BATTLE, name: "Bug Goblin",     chapter: "Village of Variables",  qIdx: 0,  enemy: { name: "Bug Goblin",     sprite: "goblin", atk: 12 }, story: "A Bug Goblin attacks the village! Prove your Python knowledge to defeat it!" },
+    { type: NODE_BATTLE, name: "Syntax Slime",   chapter: "Village of Variables",  qIdx: 1,  enemy: { name: "Syntax Slime",   sprite: "slime",  atk: 10 }, story: "A Syntax Slime oozes toward you, corrupting code as it goes!" },
+    { type: NODE_SHOP,   name: "Village Shop",   chapter: "Village of Variables" },
+    { type: NODE_BATTLE, name: "Type Troll",     chapter: "Village of Variables",  qIdx: 2,  enemy: { name: "Type Troll",     sprite: "troll",  atk: 15 }, story: "A massive Type Troll blocks the bridge. It demands proof of knowledge!" },
+    { type: NODE_BATTLE, name: "Print Phantom",  chapter: "Village of Variables",  qIdx: 3,  enemy: { name: "Print Phantom",  sprite: "phantom",atk: 14 }, story: "A translucent Print Phantom appears, whispering output commands!" },
+    { type: NODE_BOSS,   name: "Division Drake", chapter: "Village of Variables",  qIdx: 4,  enemy: { name: "Division Drake", sprite: "dragon", atk: 20 }, story: "The Division Drake guards the village exit! Only a true coder can pass!" },
 
-// === Player State ===
-function createPlayer(name) {
-    return {
-        name: name || "Hero",
-        hp: 100,
-        maxHp: 100,
-        xp: 0,
-        level: 1,
-        gold: 0,
-        attack: 10,
-        defense: 5,
-        questIndex: 0,
-        inventory: [],
-        defeatedEnemies: [],
-    };
-}
+    // Chapter 2: Forest of Flow
+    { type: NODE_BATTLE, name: "Conditional Cobra", chapter: "Forest of Flow", qIdx: 5,  enemy: { name: "Conditional Cobra", sprite: "snake", atk: 18 }, story: "A Conditional Cobra slithers from the shadows, hissing if/else statements!" },
+    { type: NODE_BATTLE, name: "Loop Wolf",         chapter: "Forest of Flow", qIdx: 6,  enemy: { name: "Loop Wolf",         sprite: "wolf",  atk: 20 }, story: "A Loop Wolf circles you endlessly. Break free with Python!" },
+    { type: NODE_REST,   name: "Forest Campfire",   chapter: "Forest of Flow" },
+    { type: NODE_BATTLE, name: "Range Wraith",      chapter: "Forest of Flow", qIdx: 7,  enemy: { name: "Range Wraith",      sprite: "wraith",atk: 22 }, story: "A Range Wraith materializes, guarding the path with number sequences!" },
+    { type: NODE_BATTLE, name: "Continue Spider",   chapter: "Forest of Flow", qIdx: 8,  enemy: { name: "Continue Spider",   sprite: "spider",atk: 20 }, story: "A massive spider weaves webs of complex control flow!" },
+    { type: NODE_SHOP,   name: "Forest Merchant",   chapter: "Forest of Flow" },
+    { type: NODE_BATTLE, name: "Boolean Bat",       chapter: "Forest of Flow", qIdx: 9,  enemy: { name: "Boolean Bat",       sprite: "bat",   atk: 22 }, story: "A Boolean Bat dives at you from the darkness!" },
+    { type: NODE_BOSS,   name: "While Wyrm",        chapter: "Forest of Flow", qIdx: 10, enemy: { name: "While Wyrm",        sprite: "dragon", atk: 28 }, story: "The While Wyrm coils around an ancient tree, looping endlessly. End its cycle!" },
 
-let player = null;
-let answering = false;
+    // Chapter 3: Cavern of Collections
+    { type: NODE_BATTLE, name: "List Lizard",       chapter: "Cavern of Collections", qIdx: 11, enemy: { name: "List Lizard",       sprite: "lizard", atk: 24 }, story: "A List Lizard guards a treasure chest full of data!" },
+    { type: NODE_BATTLE, name: "Dict Dragon",       chapter: "Cavern of Collections", qIdx: 12, enemy: { name: "Dict Dragon",       sprite: "dragon", atk: 26 }, story: "A Dictionary Dragon awakens, breathing key-value fire!" },
+    { type: NODE_REST,   name: "Crystal Spring",    chapter: "Cavern of Collections" },
+    { type: NODE_BATTLE, name: "Length Leviathan",   chapter: "Cavern of Collections", qIdx: 13, enemy: { name: "Length Leviathan",   sprite: "golem",  atk: 26 }, story: "A massive creature made of nested data structures rises from the depths!" },
+    { type: NODE_BATTLE, name: "Slice Siren",       chapter: "Cavern of Collections", qIdx: 14, enemy: { name: "Slice Siren",       sprite: "siren",  atk: 24 }, story: "A Slice Siren sings songs of string manipulation!" },
+    { type: NODE_SHOP,   name: "Cavern Trader",     chapter: "Cavern of Collections" },
+    { type: NODE_BATTLE, name: "Tuple Titan",       chapter: "Cavern of Collections", qIdx: 15, enemy: { name: "Tuple Titan",       sprite: "golem",  atk: 28 }, story: "The Tuple Titan is immovable and unchangeable. Can you explain why?" },
+    { type: NODE_BOSS,   name: "Pop Poltergeist",   chapter: "Cavern of Collections", qIdx: 16, enemy: { name: "Pop Poltergeist",   sprite: "phantom",atk: 32 }, story: "The Poltergeist removes items from existence! Show you understand how!" },
 
-// === DOM helpers ===
-const $ = (id) => document.getElementById(id);
+    // Chapter 4: Tower of Functions
+    { type: NODE_BATTLE, name: "Def Demon",          chapter: "Tower of Functions", qIdx: 17, enemy: { name: "Def Demon",         sprite: "phantom",atk: 28 }, story: "A Def Demon blocks the stairway, demanding you define your power!" },
+    { type: NODE_BATTLE, name: "Lambda Lich",        chapter: "Tower of Functions", qIdx: 18, enemy: { name: "Lambda Lich",       sprite: "lich",   atk: 30 }, story: "The Lambda Lich casts anonymous spells from the shadows!" },
+    { type: NODE_REST,   name: "Tower Balcony",      chapter: "Tower of Functions" },
+    { type: NODE_BATTLE, name: "Return Reaper",      chapter: "Tower of Functions", qIdx: 19, enemy: { name: "Return Reaper",     sprite: "reaper", atk: 30 }, story: "The Return Reaper harvests function outputs!" },
+    { type: NODE_SHOP,   name: "Tower Armory",       chapter: "Tower of Functions" },
+    { type: NODE_BATTLE, name: "Default Doppelganger",chapter: "Tower of Functions", qIdx: 20, enemy: { name: "Default Doppelganger",sprite: "shadow",atk: 32 }, story: "A shapeshifter mimics your code with default values!" },
+    { type: NODE_BOSS,   name: "Args Archdemon",     chapter: "Tower of Functions", qIdx: 21, enemy: { name: "Args Archdemon",    sprite: "reaper", atk: 36 }, story: "The Archdemon accepts any number of arguments \u2014 and attacks!" },
 
-// === LocalStorage Save/Load ===
+    // Chapter 5: Python's Lair
+    { type: NODE_BATTLE, name: "Comprehension Chimera",chapter: "The Python's Lair", qIdx: 22, enemy: { name: "Comprehension Chimera", sprite: "dragon",   atk: 34 }, story: "A beast made of pure list comprehension logic!" },
+    { type: NODE_BATTLE, name: "Exception Elemental", chapter: "The Python's Lair", qIdx: 23, enemy: { name: "Exception Elemental",  sprite: "elemental",atk: 34 }, story: "An elemental of pure chaos \u2014 handle its exceptions or perish!" },
+    { type: NODE_BATTLE, name: "Split Specter",       chapter: "The Python's Lair", qIdx: 24, enemy: { name: "Split Specter",        sprite: "wraith",   atk: 32 }, story: "A specter that tears strings apart!" },
+    { type: NODE_BATTLE, name: "Reference Revenant",  chapter: "The Python's Lair", qIdx: 25, enemy: { name: "Reference Revenant",   sprite: "shadow",   atk: 36 }, story: "A revenant that shares your very soul \u2014 and your variables!" },
+    { type: NODE_BOSS,   name: "The Python King",     chapter: "The Python's Lair", qIdx: 26, enemy: { name: "The Python King",      sprite: "boss",     atk: 40 }, story: "The Python King \u2014 an ancient serpent of pure code. This is the final test!" },
+];
+
+// === Loot Table (given after battles) ===
+var LOOT_TABLE = [
+    null, null, null, "Wooden Sword", null,
+    "Leather Shield", null, null, null, null,
+    null, "Speed Boots", null, "Crystal Ring", null,
+    null, null, "Iron Armor", null, null,
+    "Magic Staff", null, null, "Enchanted Cloak", null,
+    null, "Dragon Scale", null, null, null,
+    null, null, "Python Crown",
+];
+
+// === State ===
+var player = null;
+var selectedAvatar = 0;
+var currentAttempt = 0;
+var maxAttempts = 2;
+var answering = false;
+
+// === DOM ===
+function $(id) { return document.getElementById(id); }
+
+// === Save/Load ===
 function saveGame() {
-    try {
-        localStorage.setItem("pythonquest_save", JSON.stringify(player));
-    } catch (e) {
-        // Storage full or unavailable - game still works, just won't persist
-    }
+    try { localStorage.setItem("pq_save2", JSON.stringify(player)); } catch(e) {}
 }
-
 function loadGame() {
     try {
-        const data = localStorage.getItem("pythonquest_save");
-        if (data) return JSON.parse(data);
-    } catch (e) {
-        // Corrupted save - start fresh
-    }
-    return null;
+        var d = localStorage.getItem("pq_save2");
+        return d ? JSON.parse(d) : null;
+    } catch(e) { return null; }
 }
-
 function clearSave() {
-    try {
-        localStorage.removeItem("pythonquest_save");
-    } catch (e) {
-        // Ignore
-    }
+    try { localStorage.removeItem("pq_save2"); } catch(e) {}
 }
 
 // === Screens ===
 function showScreen(id) {
-    document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+    document.querySelectorAll(".screen").forEach(function(s) { s.classList.remove("active"); });
     $(id).classList.add("active");
 }
 
-// === Notification ===
-function notify(text, duration) {
-    duration = duration || 2500;
-    const el = $("notification");
+// === Notifications ===
+function notify(text, ms) {
+    var el = $("notification");
     el.textContent = text;
     el.classList.remove("hidden");
-    setTimeout(function () { el.classList.add("hidden"); }, duration);
+    setTimeout(function() { el.classList.add("hidden"); }, ms || 2500);
 }
 
-// === HUD ===
-function updateHUD() {
-    $("hud-name").textContent = player.name;
-    $("hud-level").textContent = "Lv. " + player.level;
-    $("hud-xp").textContent = "XP: " + player.xp;
-    $("hud-gold").textContent = "Gold: " + player.gold;
-
-    var pct = Math.max(0, (player.hp / player.maxHp) * 100);
-    var hpBar = $("hp-bar");
-    hpBar.style.width = pct + "%";
-    if (pct < 30) {
-        hpBar.classList.add("low");
-    } else {
-        hpBar.classList.remove("low");
-    }
-    $("hp-text").textContent = player.hp + "/" + player.maxHp;
+// === Create Player ===
+function createPlayer(name, avatarIdx) {
+    var av = AVATARS[avatarIdx];
+    return {
+        name: name || "Hero",
+        avatarIdx: avatarIdx,
+        hp: 100 + av.hpBonus,
+        maxHp: 100 + av.hpBonus,
+        xp: 0,
+        level: 1,
+        gold: 20,
+        attack: 8 + av.atkBonus,
+        defense: 2 + av.defBonus,
+        nodeIndex: 0,
+        inventory: [],
+        potions: [],
+        defeatedNodes: [],
+        totalCorrect: 0,
+        totalWrong: 0,
+    };
 }
 
-// === Quest Progress Bar ===
-function updateQuestProgress() {
-    var container = $("quest-progress");
-    container.innerHTML = "";
-    for (var i = 0; i < QUESTS.length; i++) {
-        var dot = document.createElement("div");
-        dot.className = "quest-dot";
-        if (i < player.questIndex) {
-            dot.classList.add("completed");
-        } else if (i === player.questIndex) {
-            dot.classList.add("current");
-        }
-        container.appendChild(dot);
-    }
-}
+// ============================================================
+// START SCREEN
+// ============================================================
 
-// === Render Quest ===
-function renderQuest() {
-    if (player.questIndex >= QUESTS.length) {
-        showVictory();
-        return;
-    }
-
-    var quest = QUESTS[player.questIndex];
-
-    $("chapter-banner").textContent = quest.chapter;
-    updateQuestProgress();
-
-    // Enemy
-    var emoji = ENEMY_EMOJIS[quest.enemy.sprite] || "\u{1F47E}";
-    $("enemy-sprite").textContent = emoji;
-    $("enemy-name").textContent = quest.enemy.name;
-    $("story-text").textContent = quest.story;
-
-    // Challenge
-    $("question-text").textContent = quest.challenge.question;
-
-    var container = $("options-container");
-    container.innerHTML = "";
-
-    quest.challenge.options.forEach(function (opt) {
-        var btn = document.createElement("button");
-        btn.className = "option-btn";
-        btn.textContent = opt;
-        btn.addEventListener("click", function () { submitAnswer(opt, btn); });
-        container.appendChild(btn);
-    });
-
-    // Show challenge, hide result
-    $("challenge-area").classList.remove("hidden");
-    $("result-area").classList.add("hidden");
-    answering = false;
-}
-
-// === Submit Answer ===
-function submitAnswer(answer, btnEl) {
-    if (answering) return;
-    answering = true;
-
-    // Disable all buttons
-    var allBtns = document.querySelectorAll(".option-btn");
-    allBtns.forEach(function (b) { b.disabled = true; });
-
-    var quest = QUESTS[player.questIndex];
-    var isCorrect = answer === quest.challenge.answer;
-
-    if (isCorrect) {
-        btnEl.classList.add("correct");
-    } else {
-        btnEl.classList.add("wrong");
-        // Highlight correct answer
-        allBtns.forEach(function (b) {
-            if (b.textContent === quest.challenge.answer) {
-                b.classList.add("correct");
-            }
+// Render avatar grid
+function renderAvatarGrid() {
+    var grid = $("avatar-grid");
+    grid.innerHTML = "";
+    AVATARS.forEach(function(av, i) {
+        var card = document.createElement("div");
+        card.className = "avatar-card" + (i === selectedAvatar ? " selected" : "");
+        card.innerHTML =
+            '<span class="avatar-emoji">' + av.emoji + '</span>' +
+            '<div class="avatar-name">' + av.name + '</div>' +
+            '<div class="avatar-stat">' + av.stat + '</div>';
+        card.addEventListener("click", function() {
+            selectedAvatar = i;
+            renderAvatarGrid();
         });
-    }
-
-    // Process result after a brief pause for visual feedback
-    setTimeout(function () { processResult(isCorrect, quest); }, 700);
+        grid.appendChild(card);
+    });
 }
 
-// === Process Result ===
-function processResult(isCorrect, quest) {
-    $("challenge-area").classList.add("hidden");
-    $("result-area").classList.remove("hidden");
+// Init start screen
+renderAvatarGrid();
 
-    var msgEl = $("result-message");
-    var iconEl = $("result-icon");
-
-    if (isCorrect) {
-        // Rewards
-        player.xp += quest.xpReward;
-        player.gold += quest.goldReward;
-        player.defeatedEnemies.push(quest.enemy.name);
-
-        if (quest.rewardItem) {
-            player.inventory.push(quest.rewardItem);
-        }
-
-        // Level up
-        var leveledUp = false;
-        var xpNeeded = player.level * 100;
-        while (player.xp >= xpNeeded) {
-            player.level++;
-            player.maxHp += 20;
-            player.hp = player.maxHp;
-            player.attack += 5;
-            player.defense += 3;
-            leveledUp = true;
-            xpNeeded = player.level * 100;
-        }
-
-        player.questIndex++;
-
-        iconEl.textContent = "\u2694\uFE0F";
-        msgEl.textContent = "You defeated " + quest.enemy.name + "!";
-        msgEl.style.color = "var(--green)";
-
-        var rewardText = "+" + quest.xpReward + " XP, +" + quest.goldReward + " Gold";
-        if (quest.rewardItem) {
-            rewardText += "\nNew item: " + quest.rewardItem + "!";
-        }
-        if (leveledUp) {
-            rewardText += "\n\u2B50 LEVEL UP! You are now Level " + player.level + "!";
-            $("hud-level").classList.add("level-up-flash");
-            setTimeout(function () { $("hud-level").classList.remove("level-up-flash"); }, 1500);
-        }
-        $("result-rewards").textContent = rewardText;
-        $("result-rewards").style.whiteSpace = "pre-line";
-
-    } else {
-        // Take damage
-        var damage = Math.max(5, quest.enemy.attack - player.defense);
-        player.hp = Math.max(0, player.hp - damage);
-
-        iconEl.textContent = "\u{1F4A5}";
-        msgEl.textContent = quest.enemy.name + " attacks! You take " + damage + " damage.";
-        msgEl.style.color = "var(--accent)";
-
-        var rewardArea = $("result-rewards");
-        if (player.hp <= 0) {
-            player.hp = player.maxHp;
-            rewardArea.textContent = "You were knocked out and revived at camp. Try again!";
-            rewardArea.style.color = "var(--text-dim)";
-        } else {
-            rewardArea.textContent = "HP: " + player.hp + "/" + player.maxHp + " \u2014 Try again!";
-            rewardArea.style.color = "var(--text-dim)";
-        }
+// Check saved game
+(function() {
+    var saved = loadGame();
+    if (saved && saved.nodeIndex < MAP_NODES.length) {
+        $("continue-save-btn").classList.remove("hidden");
     }
+})();
 
-    $("result-explanation").textContent = quest.challenge.explanation;
-
-    updateHUD();
-    updateQuestProgress();
-    saveGame();
-}
-
-// === Continue Button ===
-$("continue-btn").addEventListener("click", function () {
-    if (player.questIndex >= QUESTS.length) {
-        showVictory();
-    } else {
-        renderQuest();
-    }
-});
-
-// === Victory ===
-function showVictory() {
-    showScreen("victory-screen");
-    $("final-stats").innerHTML =
-        "<strong>" + player.name + "'s Journey</strong><br>" +
-        "Level: " + player.level + "<br>" +
-        "Total XP: " + player.xp + "<br>" +
-        "Gold: " + player.gold + "<br>" +
-        "Items: " + (player.inventory.length > 0 ? player.inventory.join(", ") : "None") + "<br>" +
-        "Enemies Defeated: " + player.defeatedEnemies.length + "/" + QUESTS.length;
-    clearSave();
-}
-
-// === Start Game ===
 $("start-btn").addEventListener("click", startNewGame);
-$("player-name").addEventListener("keydown", function (e) {
+$("player-name").addEventListener("keydown", function(e) {
     if (e.key === "Enter") startNewGame();
 });
 
 function startNewGame() {
     var name = $("player-name").value.trim() || "Hero";
-    player = createPlayer(name);
+    player = createPlayer(name, selectedAvatar);
     saveGame();
-    updateHUD();
-    renderQuest();
-    showScreen("game-screen");
+    openMap();
 }
 
-// === Continue Saved Game ===
-$("continue-save-btn").addEventListener("click", function () {
+$("continue-save-btn").addEventListener("click", function() {
     var saved = loadGame();
     if (saved) {
         player = saved;
-        updateHUD();
-        if (player.questIndex >= QUESTS.length) {
+        if (player.nodeIndex >= MAP_NODES.length) {
             showVictory();
         } else {
-            renderQuest();
-            showScreen("game-screen");
+            openMap();
         }
     }
 });
 
-// === Rest at Inn ===
-$("rest-btn").addEventListener("click", function () {
-    if (player.gold >= 10) {
-        player.gold -= 10;
-        player.hp = player.maxHp;
-        updateHUD();
-        saveGame();
-        notify("You rest at the inn and restore full HP!");
+// ============================================================
+// WORLD MAP
+// ============================================================
+
+function openMap() {
+    renderMap();
+    showScreen("map-screen");
+    // Scroll to current node
+    setTimeout(function() {
+        var avail = document.querySelector(".map-node.available");
+        if (avail) avail.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 200);
+}
+
+function updateMapHUD() {
+    var av = AVATARS[player.avatarIdx];
+    $("map-avatar-icon").textContent = av.emoji;
+    $("map-name").textContent = player.name;
+    $("map-level").textContent = "Lv. " + player.level;
+    $("map-level").style.color = "var(--gold)";
+    $("map-xp").textContent = "XP: " + player.xp;
+    $("map-gold").textContent = "Gold: " + player.gold;
+
+    var pct = Math.max(0, (player.hp / player.maxHp) * 100);
+    $("map-hp-bar").style.width = pct + "%";
+    $("map-hp-bar").className = "hp-bar" + (pct < 30 ? " low" : "");
+    $("map-hp-text").textContent = player.hp + "/" + player.maxHp;
+}
+
+function renderMap() {
+    updateMapHUD();
+    var container = $("map-nodes");
+    container.innerHTML = "";
+
+    var lastChapter = "";
+
+    MAP_NODES.forEach(function(node, idx) {
+        // Chapter label
+        if (node.chapter && node.chapter !== lastChapter) {
+            lastChapter = node.chapter;
+            var label = document.createElement("div");
+            label.className = "map-chapter-label";
+            label.textContent = node.chapter;
+            container.appendChild(label);
+        }
+
+        // Connector
+        if (idx > 0 && MAP_NODES[idx - 1].chapter === node.chapter) {
+            var conn = document.createElement("div");
+            conn.className = "map-connector" + (idx <= player.nodeIndex ? " completed" : "");
+            container.appendChild(conn);
+        }
+
+        // Node
+        var el = document.createElement("div");
+        el.className = "map-node";
+
+        var isCompleted = player.defeatedNodes.indexOf(idx) !== -1;
+        var isAvailable = idx === player.nodeIndex;
+        var isLocked = idx > player.nodeIndex;
+
+        if (isCompleted) el.classList.add("completed");
+        else if (isAvailable) el.classList.add("available");
+        else if (isLocked) el.classList.add("locked");
+
+        // Icon
+        var iconText = "";
+        if (node.type === NODE_BATTLE) iconText = ENEMY_EMOJIS[node.enemy.sprite] || "\uD83D\uDC7E";
+        else if (node.type === NODE_BOSS) iconText = ENEMY_EMOJIS[node.enemy.sprite] || "\uD83D\uDC80";
+        else if (node.type === NODE_SHOP) iconText = "\uD83D\uDED2";
+        else if (node.type === NODE_REST) iconText = "\uD83C\uDF43";
+
+        var typeLabel = node.type === NODE_BOSS ? "BOSS" : node.type.charAt(0).toUpperCase() + node.type.slice(1);
+
+        el.innerHTML =
+            '<div class="node-icon">' + iconText + '</div>' +
+            '<div class="node-info">' +
+                '<div class="node-name">' + node.name + '</div>' +
+                '<div class="node-type">' + typeLabel + '</div>' +
+            '</div>' +
+            (isCompleted ? '<div class="node-check">\u2705</div>' : '') +
+            (isAvailable ? '<div class="player-marker">' + AVATARS[player.avatarIdx].emoji + '</div>' : '');
+
+        if (isAvailable) {
+            el.addEventListener("click", function() { enterNode(idx); });
+        }
+
+        container.appendChild(el);
+    });
+}
+
+function enterNode(idx) {
+    var node = MAP_NODES[idx];
+    if (node.type === NODE_BATTLE || node.type === NODE_BOSS) {
+        startBattle(idx);
+    } else if (node.type === NODE_SHOP) {
+        openShop(idx);
+    } else if (node.type === NODE_REST) {
+        openRest(idx);
+    }
+}
+
+// ============================================================
+// BATTLE SYSTEM
+// ============================================================
+
+var currentBattleNode = null;
+
+function startBattle(nodeIdx) {
+    currentBattleNode = nodeIdx;
+    var node = MAP_NODES[nodeIdx];
+    var question = QUESTIONS[node.qIdx];
+    currentAttempt = 0;
+    answering = false;
+
+    // Update HUD
+    var av = AVATARS[player.avatarIdx];
+    $("battle-player-sprite").textContent = av.emoji;
+    $("battle-name").textContent = player.name;
+    $("battle-level").textContent = "Lv. " + player.level;
+    $("battle-level").style.color = "var(--gold)";
+    updateBattleHP();
+
+    // Enemy
+    $("enemy-sprite-battle").textContent = ENEMY_EMOJIS[node.enemy.sprite] || "\uD83D\uDC7E";
+    $("battle-enemy-name").textContent = node.enemy.name;
+    $("battle-story").textContent = node.story;
+
+    // Question
+    $("question-text").innerHTML = formatQuestion(question.question);
+    $("attempt-indicator").textContent = "Attempt 1 of " + maxAttempts;
+
+    // Options
+    var optContainer = $("options-container");
+    var typeContainer = $("typein-container");
+    optContainer.innerHTML = "";
+
+    if (question.type === "mcq") {
+        typeContainer.classList.add("hidden");
+        question.options.forEach(function(opt) {
+            var btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.textContent = opt;
+            btn.addEventListener("click", function() { submitMCQ(opt, btn); });
+            optContainer.appendChild(btn);
+        });
     } else {
-        notify("Not enough gold! You need 10 gold to rest.");
+        typeContainer.classList.remove("hidden");
+        $("typein-input").value = "";
+        $("typein-input").className = "";
+        $("typein-input").disabled = false;
+        $("typein-submit").disabled = false;
+        setTimeout(function() { $("typein-input").focus(); }, 300);
+    }
+
+    // Show challenge, hide result
+    $("challenge-area").classList.remove("hidden");
+    $("result-area").classList.add("hidden");
+    showScreen("battle-screen");
+}
+
+function formatQuestion(text) {
+    // Convert backtick code blocks and newlines
+    return text
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\n/g, '<br>');
+}
+
+function updateBattleHP() {
+    var pct = Math.max(0, (player.hp / player.maxHp) * 100);
+    $("battle-hp-bar").style.width = pct + "%";
+    $("battle-hp-bar").className = "hp-bar" + (pct < 30 ? " low" : "");
+    $("battle-hp-text").textContent = player.hp + "/" + player.maxHp;
+}
+
+function submitMCQ(answer, btnEl) {
+    if (answering) return;
+    answering = true;
+
+    var node = MAP_NODES[currentBattleNode];
+    var question = QUESTIONS[node.qIdx];
+    var isCorrect = answer === question.answer;
+
+    if (isCorrect) {
+        btnEl.classList.add("correct");
+        disableAllOptions();
+        player.totalCorrect++;
+        setTimeout(function() { showResult(true, node, question); }, 600);
+    } else {
+        currentAttempt++;
+        btnEl.classList.add("wrong");
+        btnEl.disabled = true;
+        player.totalWrong++;
+
+        // Apply damage immediately on wrong answer
+        applyDamage(node);
+
+        if (currentAttempt >= maxAttempts) {
+            // Show correct answer and result
+            disableAllOptions();
+            highlightCorrectOption(question.answer);
+            setTimeout(function() { showResult(false, node, question); }, 800);
+        } else {
+            // Let them try again
+            $("attempt-indicator").textContent = "Attempt " + (currentAttempt + 1) + " of " + maxAttempts + " \u2014 Try again!";
+            $("attempt-indicator").style.color = "var(--accent)";
+            answering = false;
+        }
+    }
+}
+
+// Type-in answer handler
+$("typein-submit").addEventListener("click", submitTypein);
+$("typein-input").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") submitTypein();
+});
+
+function submitTypein() {
+    if (answering) return;
+    var input = $("typein-input");
+    var val = input.value.trim();
+    if (!val) return;
+
+    answering = true;
+    var node = MAP_NODES[currentBattleNode];
+    var question = QUESTIONS[node.qIdx];
+
+    var isCorrect = false;
+    var accepts = question.accept || [question.answer];
+    for (var i = 0; i < accepts.length; i++) {
+        if (val.toLowerCase() === accepts[i].toLowerCase()) {
+            isCorrect = true;
+            break;
+        }
+    }
+
+    if (isCorrect) {
+        input.classList.add("correct-input");
+        input.disabled = true;
+        $("typein-submit").disabled = true;
+        player.totalCorrect++;
+        setTimeout(function() { showResult(true, node, question); }, 600);
+    } else {
+        currentAttempt++;
+        input.classList.add("wrong-input");
+        player.totalWrong++;
+
+        // Apply damage
+        applyDamage(node);
+
+        if (currentAttempt >= maxAttempts) {
+            input.disabled = true;
+            $("typein-submit").disabled = true;
+            setTimeout(function() { showResult(false, node, question); }, 600);
+        } else {
+            $("attempt-indicator").textContent = "Attempt " + (currentAttempt + 1) + " of " + maxAttempts + " \u2014 Try again!";
+            $("attempt-indicator").style.color = "var(--accent)";
+            setTimeout(function() {
+                input.classList.remove("wrong-input");
+                input.value = "";
+                input.focus();
+                answering = false;
+            }, 500);
+        }
+    }
+}
+
+function applyDamage(node) {
+    var damage = Math.max(8, node.enemy.atk - player.defense);
+    player.hp = Math.max(0, player.hp - damage);
+    updateBattleHP();
+
+    // Flash effect
+    var hud = $("battle-hud");
+    hud.classList.add("damage-flash");
+    setTimeout(function() { hud.classList.remove("damage-flash"); }, 400);
+
+    if (player.hp <= 0) {
+        notify("You were knocked out! Revived at half HP.", 3000);
+        player.hp = Math.floor(player.maxHp / 2);
+        updateBattleHP();
+    }
+}
+
+function disableAllOptions() {
+    document.querySelectorAll(".option-btn").forEach(function(b) { b.disabled = true; });
+}
+
+function highlightCorrectOption(answer) {
+    document.querySelectorAll(".option-btn").forEach(function(b) {
+        if (b.textContent === answer) b.classList.add("correct");
+    });
+}
+
+function showResult(isCorrect, node, question) {
+    $("challenge-area").classList.add("hidden");
+    $("result-area").classList.remove("hidden");
+
+    var iconEl = $("result-icon");
+    var msgEl = $("result-message");
+    var explEl = $("result-explanation");
+    var rewEl = $("result-rewards");
+
+    explEl.innerHTML = question.explanation;
+    explEl.classList.remove("hidden");
+
+    if (isCorrect) {
+        // Calculate rewards
+        var xpReward = 30 + (node.qIdx * 4);
+        var goldReward = 15 + (node.qIdx * 3);
+        if (node.type === NODE_BOSS) {
+            xpReward = Math.floor(xpReward * 1.5);
+            goldReward = Math.floor(goldReward * 1.5);
+        }
+        // Bonus for first try
+        if (currentAttempt === 0) {
+            xpReward = Math.floor(xpReward * 1.3);
+            goldReward = Math.floor(goldReward * 1.2);
+        }
+
+        player.xp += xpReward;
+        player.gold += goldReward;
+        player.defeatedNodes.push(currentBattleNode);
+        player.nodeIndex++;
+
+        // Loot
+        var loot = LOOT_TABLE[currentBattleNode] || null;
+        if (loot) player.inventory.push(loot);
+
+        // Level up check
+        var leveledUp = false;
+        var needed = player.level * 80;
+        while (player.xp >= needed) {
+            player.level++;
+            player.maxHp += 15;
+            player.hp = Math.min(player.hp + 15, player.maxHp);
+            player.attack += 2;
+            player.defense += 1;
+            leveledUp = true;
+            needed = player.level * 80;
+        }
+
+        iconEl.textContent = "\u2694\uFE0F";
+        msgEl.textContent = node.enemy.name + " defeated!";
+        msgEl.style.color = "var(--green)";
+
+        var rewardLines = "+" + xpReward + " XP, +" + goldReward + " Gold";
+        if (currentAttempt === 0) rewardLines += " (Perfect!)";
+        if (loot) rewardLines += "\nNew item: " + loot + "!";
+        if (leveledUp) rewardLines += "\n\u2B50 LEVEL UP! Now Level " + player.level + "!";
+        rewEl.textContent = rewardLines;
+        rewEl.style.color = "var(--gold)";
+    } else {
+        // Wrong - they still advance but with less reward
+        var smallXP = 10 + node.qIdx;
+        player.xp += smallXP;
+        player.defeatedNodes.push(currentBattleNode);
+        player.nodeIndex++;
+
+        iconEl.textContent = "\uD83D\uDCA5";
+        msgEl.textContent = "You barely survived!";
+        msgEl.style.color = "var(--accent)";
+        rewEl.textContent = "+" + smallXP + " XP (reduced)\nCorrect answer: " + question.answer;
+        rewEl.style.color = "var(--text-dim)";
+    }
+
+    updateBattleHP();
+    saveGame();
+}
+
+$("continue-btn").addEventListener("click", function() {
+    if (player.nodeIndex >= MAP_NODES.length) {
+        showVictory();
+    } else {
+        openMap();
     }
 });
 
-// === Inventory ===
-$("inventory-btn").addEventListener("click", function () {
-    var list = $("inventory-list");
+// ============================================================
+// SHOP
+// ============================================================
+
+var currentShopNode = null;
+
+function openShop(nodeIdx) {
+    currentShopNode = nodeIdx;
+    $("shop-gold").textContent = "Gold: " + player.gold;
+
+    var container = $("shop-items");
+    container.innerHTML = "";
+
+    SHOP_CATALOG.forEach(function(item, i) {
+        var el = document.createElement("div");
+        el.className = "shop-item";
+
+        var canAfford = player.gold >= item.cost;
+
+        el.innerHTML =
+            '<div class="shop-item-icon">' + item.icon + '</div>' +
+            '<div class="shop-item-info">' +
+                '<div class="shop-item-name">' + item.name + '</div>' +
+                '<div class="shop-item-desc">' + item.desc + '</div>' +
+            '</div>';
+
+        var btn = document.createElement("button");
+        btn.className = "btn btn-primary btn-small";
+        btn.textContent = item.cost + "g";
+        btn.disabled = !canAfford;
+        btn.addEventListener("click", function() { buyItem(i); });
+        el.appendChild(btn);
+        container.appendChild(el);
+    });
+
+    showScreen("shop-screen");
+}
+
+function buyItem(catalogIdx) {
+    var item = SHOP_CATALOG[catalogIdx];
+    if (player.gold < item.cost) return;
+
+    player.gold -= item.cost;
+
+    if (item.type === "potion") {
+        player.potions.push({ name: item.name, icon: item.icon, value: item.value });
+        notify("Bought " + item.name + "!");
+    } else if (item.type === "buff") {
+        player[item.stat] += item.value;
+        if (item.stat === "attack") {
+            notify("+2 ATK! Now: " + player.attack);
+        } else {
+            notify("+2 DEF! Now: " + player.defense);
+        }
+    }
+
+    saveGame();
+    openShop(currentShopNode); // Re-render
+}
+
+$("shop-leave").addEventListener("click", function() {
+    player.defeatedNodes.push(currentShopNode);
+    player.nodeIndex++;
+    saveGame();
+    openMap();
+});
+
+// ============================================================
+// REST
+// ============================================================
+
+function openRest(nodeIdx) {
+    var healAmount = Math.floor(player.maxHp * 0.6);
+    var before = player.hp;
+    player.hp = Math.min(player.maxHp, player.hp + healAmount);
+    var healed = player.hp - before;
+
+    $("rest-hp-info").textContent = "Restored " + healed + " HP! (" + player.hp + "/" + player.maxHp + ")";
+
+    player.defeatedNodes.push(nodeIdx);
+    player.nodeIndex++;
+    saveGame();
+
+    showScreen("rest-screen");
+}
+
+$("rest-continue").addEventListener("click", function() {
+    openMap();
+});
+
+// ============================================================
+// INVENTORY
+// ============================================================
+
+function openInventory() {
+    var listEl = $("inventory-list");
+    var potEl = $("inventory-potions");
+
+    // Equipment
     if (player.inventory.length === 0) {
-        list.innerHTML = '<div class="inv-item" style="color:var(--text-dim)">No items yet. Defeat enemies to earn loot!</div>';
+        listEl.innerHTML = '<div class="inv-section-title">Equipment</div><div class="inv-item" style="color:var(--text-dim)">No items yet</div>';
     } else {
-        list.innerHTML = player.inventory
-            .map(function (item) { return '<div class="inv-item">\u{1F392} ' + item + '</div>'; })
-            .join("");
+        listEl.innerHTML = '<div class="inv-section-title">Equipment</div>' +
+            player.inventory.map(function(item) {
+                return '<div class="inv-item">\uD83C\uDF92 ' + item + '</div>';
+            }).join("");
     }
-    $("inventory-modal").classList.remove("hidden");
-});
 
-$("close-inventory").addEventListener("click", function () {
+    // Potions
+    if (player.potions.length === 0) {
+        potEl.innerHTML = '<div class="inv-section-title">Potions</div><div class="inv-item" style="color:var(--text-dim)">No potions</div>';
+    } else {
+        potEl.innerHTML = '<div class="inv-section-title">Potions</div>';
+        player.potions.forEach(function(pot, i) {
+            var div = document.createElement("div");
+            div.className = "inv-item";
+            div.innerHTML = pot.icon + ' ' + pot.name + ' <span style="color:var(--green)">+' + pot.value + ' HP</span>';
+
+            var btn = document.createElement("button");
+            btn.className = "btn btn-primary btn-small";
+            btn.textContent = "Use";
+            btn.style.marginLeft = "auto";
+            btn.addEventListener("click", function() { usePotion(i); });
+            div.appendChild(btn);
+            potEl.appendChild(div);
+        });
+    }
+
+    $("inventory-modal").classList.remove("hidden");
+}
+
+function usePotion(idx) {
+    var pot = player.potions[idx];
+    var before = player.hp;
+    player.hp = Math.min(player.maxHp, player.hp + pot.value);
+    var healed = player.hp - before;
+
+    player.potions.splice(idx, 1);
+    saveGame();
+
+    notify("Healed " + healed + " HP!");
+
+    // Update whichever HUD is visible
+    updateMapHUD();
+    updateBattleHP();
+    openInventory(); // Re-render
+}
+
+$("map-inv-btn").addEventListener("click", openInventory);
+
+$("close-inventory").addEventListener("click", function() {
     $("inventory-modal").classList.add("hidden");
 });
-
-// Close modal on backdrop click
-$("inventory-modal").addEventListener("click", function (e) {
+$("inventory-modal").addEventListener("click", function(e) {
     if (e.target === $("inventory-modal")) {
         $("inventory-modal").classList.add("hidden");
     }
 });
 
-// === Replay ===
-$("replay-btn").addEventListener("click", function () {
+// ============================================================
+// VICTORY
+// ============================================================
+
+function showVictory() {
+    showScreen("victory-screen");
+    var accuracy = player.totalCorrect + player.totalWrong > 0
+        ? Math.round((player.totalCorrect / (player.totalCorrect + player.totalWrong)) * 100)
+        : 0;
+
+    $("final-stats").innerHTML =
+        "<strong>" + player.name + " the " + AVATARS[player.avatarIdx].name + "</strong><br>" +
+        "Level: " + player.level + "<br>" +
+        "Total XP: " + player.xp + "<br>" +
+        "Gold: " + player.gold + "<br>" +
+        "Accuracy: " + accuracy + "% (" + player.totalCorrect + "/" + (player.totalCorrect + player.totalWrong) + ")<br>" +
+        "Items: " + (player.inventory.length > 0 ? player.inventory.join(", ") : "None");
+    clearSave();
+}
+
+$("replay-btn").addEventListener("click", function() {
     clearSave();
     showScreen("start-screen");
     $("player-name").value = "";
     $("continue-save-btn").classList.add("hidden");
+    selectedAvatar = 0;
+    renderAvatarGrid();
 });
-
-// === Init: check for saved game ===
-(function init() {
-    var saved = loadGame();
-    if (saved && saved.questIndex < QUESTS.length) {
-        $("continue-save-btn").classList.remove("hidden");
-    }
-})();
