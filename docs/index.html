@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Python Quest — Learn Python RPG</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐍</text></svg>">
+</head>
+<body>
+    <div id="app">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div class="title-art">
+                <div class="title-emoji">🐍</div>
+                <h1>Python Quest</h1>
+            </div>
+            <p class="subtitle">Learn Python through an RPG adventure!</p>
+            <div class="start-form">
+                <input type="text" id="player-name" placeholder="Enter your name..." maxlength="20" autocomplete="off">
+                <button id="start-btn" class="btn btn-primary">Begin Quest</button>
+                <button id="continue-save-btn" class="btn btn-secondary hidden">Continue Saved Game</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <!-- HUD -->
+            <div id="hud">
+                <div class="hud-row">
+                    <span id="hud-name">Hero</span>
+                    <span id="hud-level">Lv. 1</span>
+                </div>
+                <div class="hp-bar-container">
+                    <div id="hp-bar" class="hp-bar" style="width:100%"></div>
+                    <span id="hp-text">100/100</span>
+                </div>
+                <div class="hud-row">
+                    <span id="hud-xp">XP: 0</span>
+                    <span id="hud-gold">Gold: 0</span>
+                </div>
+            </div>
+
+            <!-- Quest Progress -->
+            <div id="quest-progress" class="quest-progress"></div>
+
+            <!-- Chapter Banner -->
+            <div id="chapter-banner" class="chapter-banner"></div>
+
+            <!-- Story Area -->
+            <div id="story-area">
+                <div id="enemy-display">
+                    <div id="enemy-sprite" class="enemy-sprite"></div>
+                    <div id="enemy-name" class="enemy-name"></div>
+                </div>
+                <div id="story-text" class="story-text"></div>
+            </div>
+
+            <!-- Challenge Area -->
+            <div id="challenge-area">
+                <div id="question-text" class="question-text"></div>
+                <div id="options-container"></div>
+            </div>
+
+            <!-- Result Area -->
+            <div id="result-area" class="hidden">
+                <div id="result-icon" class="result-icon"></div>
+                <div id="result-message"></div>
+                <div id="result-explanation"></div>
+                <div id="result-rewards"></div>
+                <button id="continue-btn" class="btn btn-primary">Continue</button>
+            </div>
+
+            <!-- Actions Bar -->
+            <div id="actions-bar">
+                <button id="rest-btn" class="btn btn-secondary">Rest at Inn (10g)</button>
+                <button id="inventory-btn" class="btn btn-secondary">Inventory</button>
+            </div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victory-screen" class="screen">
+            <div class="victory-emoji">👑</div>
+            <h1 class="victory-title">Victory!</h1>
+            <p class="victory-text">You defeated the Python King and proved yourself a true Pythonista!</p>
+            <div id="final-stats"></div>
+            <button id="replay-btn" class="btn btn-primary">Play Again</button>
+        </div>
+
+        <!-- Inventory Modal -->
+        <div id="inventory-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Inventory</h2>
+                <div id="inventory-list"></div>
+                <button id="close-inventory" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div id="notification" class="notification hidden"></div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
