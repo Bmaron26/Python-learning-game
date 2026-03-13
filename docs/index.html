@@ -18,63 +18,106 @@
             <p class="subtitle">Learn Python through an RPG adventure!</p>
             <div class="start-form">
                 <input type="text" id="player-name" placeholder="Enter your name..." maxlength="20" autocomplete="off">
+            </div>
+            <div id="avatar-select">
+                <p class="avatar-label">Choose your class:</p>
+                <div id="avatar-grid"></div>
+            </div>
+            <div class="start-form">
                 <button id="start-btn" class="btn btn-primary">Begin Quest</button>
                 <button id="continue-save-btn" class="btn btn-secondary hidden">Continue Saved Game</button>
             </div>
         </div>
 
-        <!-- Game Screen -->
-        <div id="game-screen" class="screen">
-            <!-- HUD -->
-            <div id="hud">
+        <!-- Map Screen -->
+        <div id="map-screen" class="screen">
+            <div id="map-hud">
                 <div class="hud-row">
-                    <span id="hud-name">Hero</span>
-                    <span id="hud-level">Lv. 1</span>
+                    <span id="map-avatar-icon"></span>
+                    <span id="map-name">Hero</span>
+                    <span id="map-level">Lv. 1</span>
                 </div>
                 <div class="hp-bar-container">
-                    <div id="hp-bar" class="hp-bar" style="width:100%"></div>
-                    <span id="hp-text">100/100</span>
+                    <div id="map-hp-bar" class="hp-bar" style="width:100%"></div>
+                    <span id="map-hp-text">100/100</span>
                 </div>
                 <div class="hud-row">
-                    <span id="hud-xp">XP: 0</span>
-                    <span id="hud-gold">Gold: 0</span>
+                    <span id="map-xp" class="stat-xp">XP: 0</span>
+                    <span id="map-gold" class="stat-gold">Gold: 0</span>
+                    <button id="map-inv-btn" class="btn-icon">🎒</button>
+                </div>
+            </div>
+            <div id="map-container">
+                <div id="map-nodes"></div>
+            </div>
+        </div>
+
+        <!-- Battle Screen -->
+        <div id="battle-screen" class="screen">
+            <div id="battle-hud">
+                <div class="hud-row">
+                    <span id="battle-player-sprite"></span>
+                    <span id="battle-name">Hero</span>
+                    <span id="battle-level">Lv. 1</span>
+                </div>
+                <div class="hp-bar-container">
+                    <div id="battle-hp-bar" class="hp-bar" style="width:100%"></div>
+                    <span id="battle-hp-text">100/100</span>
                 </div>
             </div>
 
-            <!-- Quest Progress -->
-            <div id="quest-progress" class="quest-progress"></div>
-
-            <!-- Chapter Banner -->
-            <div id="chapter-banner" class="chapter-banner"></div>
-
-            <!-- Story Area -->
-            <div id="story-area">
-                <div id="enemy-display">
-                    <div id="enemy-sprite" class="enemy-sprite"></div>
-                    <div id="enemy-name" class="enemy-name"></div>
-                </div>
-                <div id="story-text" class="story-text"></div>
+            <div id="battle-arena">
+                <div id="player-sprite-battle" class="battle-sprite player-side"></div>
+                <div id="vs-text">VS</div>
+                <div id="enemy-sprite-battle" class="battle-sprite enemy-side"></div>
             </div>
+            <div id="enemy-info">
+                <span id="battle-enemy-name"></span>
+            </div>
+
+            <!-- Story -->
+            <div id="battle-story" class="story-text"></div>
 
             <!-- Challenge Area -->
             <div id="challenge-area">
                 <div id="question-text" class="question-text"></div>
+                <div id="attempt-indicator"></div>
                 <div id="options-container"></div>
+                <div id="typein-container" class="hidden">
+                    <input type="text" id="typein-input" placeholder="Type your answer..." autocomplete="off" autocapitalize="off" spellcheck="false">
+                    <button id="typein-submit" class="btn btn-primary">Submit</button>
+                </div>
             </div>
 
             <!-- Result Area -->
             <div id="result-area" class="hidden">
                 <div id="result-icon" class="result-icon"></div>
                 <div id="result-message"></div>
-                <div id="result-explanation"></div>
+                <div id="result-explanation" class="hidden"></div>
                 <div id="result-rewards"></div>
                 <button id="continue-btn" class="btn btn-primary">Continue</button>
             </div>
+        </div>
 
-            <!-- Actions Bar -->
-            <div id="actions-bar">
-                <button id="rest-btn" class="btn btn-secondary">Rest at Inn (10g)</button>
-                <button id="inventory-btn" class="btn btn-secondary">Inventory</button>
+        <!-- Shop Screen -->
+        <div id="shop-screen" class="screen">
+            <div class="shop-header">
+                <div class="shop-keeper">🧙</div>
+                <h2>Wandering Merchant</h2>
+                <p id="shop-gold" class="stat-gold">Gold: 0</p>
+            </div>
+            <div id="shop-items"></div>
+            <button id="shop-leave" class="btn btn-primary">Leave Shop</button>
+        </div>
+
+        <!-- Rest Screen -->
+        <div id="rest-screen" class="screen">
+            <div class="rest-content">
+                <div class="rest-icon">🏕️</div>
+                <h2>Campfire Rest</h2>
+                <p class="rest-text">You sit by the fire and recover your strength...</p>
+                <div id="rest-hp-info"></div>
+                <button id="rest-continue" class="btn btn-primary">Continue Journey</button>
             </div>
         </div>
 
@@ -90,8 +133,9 @@
         <!-- Inventory Modal -->
         <div id="inventory-modal" class="modal hidden">
             <div class="modal-content">
-                <h2>Inventory</h2>
+                <h2>🎒 Inventory</h2>
                 <div id="inventory-list"></div>
+                <div id="inventory-potions"></div>
                 <button id="close-inventory" class="btn btn-secondary">Close</button>
             </div>
         </div>
